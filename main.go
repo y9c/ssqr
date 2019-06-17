@@ -8,6 +8,9 @@ package main
 
 import (
 	b64 "encoding/base64"
+	"net/url"
+	"path/filepath"
+	"strings"
 
 	"encoding/json"
 	"fmt"
@@ -29,9 +32,15 @@ func main() {
 		usage()
 		os.Exit(1)
 	}
-	filepath := os.Args[1]
+	filePath := os.Args[1]
+	// read profile name
+	fileName := filepath.Base(filePath)
+	baseName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	baseName = url.QueryEscape(baseName)
+	baseName = strings.ReplaceAll(baseName, "_", "%20")
+
 	// Open our jsonFile
-	jsonFile, err := os.Open(filepath)
+	jsonFile, err := os.Open(filePath)
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
@@ -52,6 +61,7 @@ func main() {
 	// for debug
 	fmt.Printf("read config form %s\n", os.Args[1])
 	fmt.Println("--------------------------")
+	fmt.Printf("Profile Name: %s\n", baseName)
 	fmt.Printf("Server Method: %s\n", server.Method)
 	fmt.Printf("Server Password: %s\n", server.Password)
 	fmt.Printf("Server Server: %s\n", server.Server)
@@ -59,8 +69,9 @@ func main() {
 	fmt.Println("")
 	// generate QR code
 	config := fmt.Sprintf("%s:%s@%s:%d", server.Method, server.Password, server.Server, server.Port)
-	url := fmt.Sprintf("ss://%s", b64.StdEncoding.EncodeToString([]byte(config)))
-	qrCode(url)
+	urlStr := fmt.Sprintf("ss://%s#%s", b64.StdEncoding.EncodeToString([]byte(config)), baseName)
+	fmt.Println(urlStr)
+	qrCode(urlStr)
 	fmt.Println("")
 }
 
@@ -68,7 +79,7 @@ func usage() {
 	fmt.Printf("Usage:\n%s ss_config.json\n", os.Args[0])
 }
 
-func qrCode(url string) {
+func qrCode(urlStr string) {
 
 	// QR code
 	config := qrterminal.Config{
@@ -78,5 +89,5 @@ func qrCode(url string) {
 		WhiteChar: qrterminal.WHITE,
 		QuietZone: 1,
 	}
-	qrterminal.GenerateWithConfig(url, config)
+	qrterminal.GenerateWithConfig(urlStr, config)
 }
