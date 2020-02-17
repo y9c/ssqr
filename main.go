@@ -8,14 +8,13 @@ package main
 
 import (
 	b64 "encoding/base64"
-	"net/url"
-	"path/filepath"
-	"strings"
-
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/mdp/qrterminal"
 )
